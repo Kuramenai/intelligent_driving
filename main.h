@@ -20,11 +20,15 @@ vector<int> get_coordinates(Mat image, vector<double> average);
 vector<vector<int>> detect_lane_in_picture(Mat lane_image);
 vector<vector<int>> detect_lane_in_video(Mat frame);
 Mat display_lines(Mat image, vector<vector<int>>lines);
+Mat bird_eye_view_perspective(Mat image, vector<vector<int>> points);
+float get_steering_angle(Mat image, vector<vector<int>> points);
 
 void print_1D_vector_i_elements(vector<double> line);
 void print_1D_vector_d_elements(vector<double> line);
 void print_2D_vector_i_elements(vector<vector<int>> lines);
 void print_2D_vector_d_elements(vector<vector<double>> lines);
+
+float camera_offset_percent = -0.2;
 
 vector<vector<int>> detect_lane_in_picture(Mat lane_image){
     //Detect the lines of the lane in a given picture
@@ -216,8 +220,8 @@ vector<int> get_coordinates(Mat image, vector<double> average_params){
 
     double slope = average_params[0], intercept = average_params[1];
 
-    int y2 = image.size().height;
-    int y1 = (y2*3)/5;
+    int y1 = image.size().height;
+    int y2 = (y1*3)/5;
     int x1 = int((y1 - intercept)/slope);
     int  x2 = int((y2 - intercept)/slope);
      
@@ -244,9 +248,83 @@ Mat display_lines(Mat image, vector<vector<int>> lines){
                 line(line_image, Point(lines[i][0], lines[i][1]), Point(lines[i][2], lines[i][3]), Scalar(255, 0, 0), 10);
             }
         }
+
+        if(lines.size() == 2){
+             //draw heading line
+            int x1 = image_width/2*(1 + camera_offset_percent);
+            int y1 = image_height;
+            int x2 = x1;
+            int y2 = image_height*3/5;
+            line(line_image, Point(x1, y1), Point(x2, y2), Scalar(0, 255, 0), 10);
+        }
     }
     return line_image;
 }
+
+Mat bird_eye_view_perspective(Mat image, vector<vector<int>> points){
+    //Get the bird view perspective of the lane
+
+    if(!points.empty() && points.size() == 2){
+
+        Mat bird_view_image;
+
+        int image_height = image.size().height;
+        int image_width  = image.size().width;
+
+        //4 points from the original image, here we've chosen the endpoints of the lane lines
+        vector<Point2f> pts1 = {Point2f(points[0][0], points[0][1]),
+                              Point2f(points[0][2], points[0][3]),
+                              Point2f(points[1][2], points[1][3]),
+                              Point2f(points[1][0], points[1][1])};
+        
+        //Another 4 points for the new transformed image, those are the vertices of the new image
+        vector<Point2f> pts2 = {Point2f(0, image_height),
+                              Point2f(0, 0),
+                              Point2f(image_width, 0),
+                              Point2f(image_width, image_height)};
+        
+        //Perspective Transform
+        Mat transformation_matrix = getPerspectiveTransform(pts1, pts2);
+        warpPerspective(image, bird_view_image, transformation_matrix, Size(image_width, image_height));
+        
+        return bird_view_image;
+    }
+    else{
+        cout << "Not enough points" << endl;
+        return {};
+    }
+
+}
+
+float get_steering_angle(Mat image, vector<vector<int>> points){
+    //Return the angle the vehicle needs to turn to stay in 
+
+    if(!points.empty() && points.size() == 2){
+        int image_height = image.size().height;
+        int image_width  = image.size().width;
+
+        int lane_midpoint = (points[0][2] + points[1][2])/2;
+        int x_heading_line = image_width/2*(1 + camera_offset_percent);
+        int x_offset =  x_heading_line - lane_midpoint;
+        int y_offset = image_height*3/5;
+
+        float steering_angle = (float) x_offset/y_offset;
+        steering_angle = roundf(atanf(steering_angle));
+        float steering_angle_in_degree = steering_angle*180/CV_PI;
+
+        return steering_angle_in_degree;
+    }
+    else if(!points.empty() &&points.size() == 1){
+        cout << "pass" << endl;
+        return 0;
+    }
+
+    cout << "Error Error Error !!!" << endl;
+    return -1;
+}
+
+
+
 
 void print_1D_vector_i_elements(vector<int> line){
     //Helper function to print the elements of 1D vector
