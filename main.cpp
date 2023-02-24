@@ -2,7 +2,58 @@
 
 int main()
 {
-    Mat lane_image = imread("lane_pictures/lane_picture_9.jpg");
+    // VideoCapture cap;
+
+    // cap.open(0);
+
+    // if(!cap.isOpened()){
+    //     cout << "Could not open the camera" << endl;
+	//     return -1;
+    // }
+
+    // while(cap.isOpened()){
+    //     Mat frame;
+    //     cap >> frame;
+
+    //     if(frame.empty())
+    //     {
+    //         cout << "No frame detected" << endl;
+    //         return -1;
+    //     }
+
+    //     vector<vector<int>> average_lines =detect_lane_in_picture(frame);
+
+    //     if(!average_lines.empty()){
+    //         Mat line_image = display_lines(frame, average_lines);
+
+    //         Mat combo_image;
+    //         addWeighted(frame, 0.8, line_image, 1, 1, combo_image);
+
+    //         float steering_angle = get_steering_angle(combo_image, average_lines);
+    //         string text_2_display = "The steering angle is " + to_string(steering_angle) + " degrees";
+    //         putText(combo_image, text_2_display, Point(10, 20), FONT_HERSHEY_DUPLEX, 0.5, Scalar(0, 0, 255), 1);
+
+    //         imshow("Final Combo", combo_image);
+    //         char c = (char)waitKey(30);
+    //         if(c == 27){
+    //             break;
+    //         }
+
+    //     }
+
+    //     else{
+    //         cout << "Not enough lines found" << endl;
+    //     }
+
+
+       
+
+
+    // }
+
+    // cap.release();
+
+    Mat lane_image = imread("lane_pictures/lane_picture_6.jpg");
 
     vector<vector<int>> average_lines =detect_lane_in_picture(lane_image);
   
@@ -24,12 +75,6 @@ int main()
 
     imshow("Final Combo", combo_image);
     waitKey(0);
-
-
-
-    // Mat bird_eye_view = bird_eye_view_perspective(combo_image, average_lines);
-    // imshow("Bird Eye", bird_eye_view);
-    // waitKey(0);
 
 
     return 0;

@@ -308,8 +308,18 @@ float get_steering_angle(Mat image, vector<vector<int>> points){
         int x_offset =  x_heading_line - lane_midpoint;
         int y_offset = image_height*3/5;
 
+        cout << x_offset << endl;
+        cout << y_offset << endl;
+
         float steering_angle = (float) x_offset/y_offset;
-        steering_angle = roundf(atanf(steering_angle));
+        cout << steering_angle <<endl;
+
+        steering_angle = atanf(steering_angle);
+        cout << steering_angle <<endl;
+
+        //steering_angle = roundf(steering_angle);
+        //cout << steering_angle <<endl;
+
         float steering_angle_in_degree = steering_angle*180/CV_PI;
 
         return steering_angle_in_degree;
